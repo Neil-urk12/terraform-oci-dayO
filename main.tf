@@ -43,11 +43,15 @@ data "oci_core_images" "latest_images" {
   sort_order = "DESC"
 }
 
+data "oci_identity_availability_domains" "ads" {
+  compartment_id = var.compartment_id
+}
+
 resource "oci_core_instance" "terraform-testing" {
-  availability_domain = "Toma"
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = var.compartment_id
 
-  shape = "VM.Standard.E4.Flex"
+  shape = "VM.Standard.E3.Flex"
   shape_config {
     ocpus         = 1
     memory_in_gbs = 6
@@ -65,7 +69,7 @@ resource "oci_core_instance" "terraform-testing" {
   }
 
   metadata = {
-    ssh_authorized_keys = file("~/.ssh/id_rsa.pub")
+    ssh_authorized_keys = file(pathexpand("~/.ssh/id_rsa.pub"))
   }
 
   display_name = "terraform server"
